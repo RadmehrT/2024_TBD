@@ -1,10 +1,9 @@
 package frc.robot;
 
-import org.photonvision.PhotonCamera;
+//import org.photonvision.PhotonCamera;
 
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -13,7 +12,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
+import frc.robot.autos.FivePiece;
+import frc.robot.autos.TestAuton;
+import frc.robot.autos.TestAuton;
 import frc.robot.autos.FivePiece;
 import frc.robot.autos.TestAuton;
 import frc.robot.commands.*;
@@ -30,22 +31,26 @@ import frc.robot.subsystems.Vision.VisionSubystem;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+
+    public SendableChooser<Command> autoChooser;
+
     /* Controllers */
     private final Joystick driver = new Joystick(0);
+    private final Joystick mechOperator = new Joystick(1);
 
     /* Drive Controls */
     private final int translationAxis = XboxController.Axis.kLeftY.value;
     private final int strafeAxis = XboxController.Axis.kLeftX.value;
     private final int rotationAxis = XboxController.Axis.kRightX.value;
 
-
-    private final Camera leftCam = new Camera(new PhotonCamera("cam"), new Transform3d(new Translation3d(0.3, 0.23, 0.18), new Rotation3d(0, 61.9, 0))); //TODO: Get right camera transform
-    //private final Camera leftCam = new Camera(new PhotonCamera("leftCam"), new Transform3d()); //TODO: Get left camera transform
+    /* Cameras
+    private final Camera rightCam = new Camera(new PhotonCamera("rightCam"), new Transform3d()); //TODO: Get right camera transform
+    private final Camera leftCam = new Camera(new PhotonCamera("leftCam"), new Transform3d()); //TODO: Get left camera transform
     /* Driver Buttons */
 
     /* TODO: Change to driver preference */
     private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kBack.value); 
-    private final JoystickButton shooterIntake = new JoystickButton(driver, XboxController.Button.kStart.value);
+    private final JoystickButton robotCentric = new JoystickButton(driver, XboxController.Button.kStart.value);
 
     private final JoystickButton runIntake = new JoystickButton(driver, XboxController.Button.kRightBumper.value);
     private final JoystickButton homeIntake = new JoystickButton(driver, XboxController.Button.kX.value);
@@ -53,23 +58,20 @@ public class RobotContainer {
     private final JoystickButton shootNote = new JoystickButton(driver, XboxController.Button.kA.value);
     private final JoystickButton RunFlyWheel = new JoystickButton(driver, XboxController.Button.kB.value);
 
-    private final JoystickButton InverseToggleIntake = new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
-
-    private final JoystickButton adjustPivotManually = new JoystickButton(driver, XboxController.Button.kY.value);
-    
-    private final POVButton subwooferShot = new POVButton(driver, 90);
-    private final POVButton protectedShot = new POVButton(driver, 270);
+    private final JoystickButton UseTrap = new JoystickButton(mechOperator, XboxController.Button.kA.value);
     /* Subsystems */
 
-    private final VisionSubystem s_VisionSubystem = new VisionSubystem(new Camera[]{leftCam}/*new Camera[]{}/*new Camera[]{rightCam, leftCam}*/);
+    private final VisionSubystem s_VisionSubystem = new VisionSubystem(new Camera[]{}/*new Camera[]{}/*new Camera[]{rightCam, leftCam}*/);
     private final Swerve s_Swerve = new Swerve(s_VisionSubystem);
     private final Pivot s_Pivot = new Pivot(s_Swerve::getPose);
 
     private final Intake s_Intake = new Intake(s_Pivot::shouldMoveIntake);
     private final Hopper s_Hopper = new Hopper();
     private final FlyWheel s_FlyWheel = new FlyWheel();
+    private final Trap s_Trap = new Trap(s_Pivot::shouldMoveTrap);
 
-    public SendableChooser<Command> autoChooser;
+    private final DigitalInput HomeRobot = new DigitalInput(0); //TODO get ID
+
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -79,11 +81,10 @@ public class RobotContainer {
                 () -> -driver.getRawAxis(translationAxis), 
                 () -> -driver.getRawAxis(strafeAxis), 
                 () -> driver.getRawAxis(rotationAxis), 
-                () -> false
+                () -> robotCentric.getAsBoolean()
             )
         );
-
-
+     
         // Configure the button bindings
         configureButtonBindings();
         configureAutoChooser();
@@ -115,18 +116,13 @@ public class RobotContainer {
         runIntake.whileTrue(new ToggleIntake(s_Intake, s_Hopper));
         homeIntake.onTrue(new InstantCommand(() -> s_Intake.setIntakeAsHomed()).alongWith(new InstantCommand(() -> s_Pivot.setPivotAsHomed())));
 
-        shootNote.toggleOnTrue(new RunHopperForShot(s_Hopper));
-       // shootNote.whileTrue(new Shoot(s_Pivot, s_FlyWheel, s_Hopper, s_Intake, s_Swerve, 
-         //   () -> -driver.getRawAxis(translationAxis), () -> -driver.getRawAxis(strafeAxis), () -> s_VisionSubystem.getCameraArray()));
+        shootNote.whileTrue(new Shoot(s_Pivot, s_FlyWheel, s_Hopper, s_Intake, s_Swerve, 
+            () -> -driver.getRawAxis(translationAxis), () -> -driver.getRawAxis(strafeAxis), null));
             
         RunFlyWheel.toggleOnTrue(new RunFlyWheel(s_FlyWheel));
-        InverseToggleIntake.whileTrue( new InverseToggleIntake(s_Intake, s_Hopper));
 
-        adjustPivotManually.onTrue(new InstantCommand(() -> s_Pivot.enable()).andThen(new AdjustPivotSetpointManually(s_Pivot)));
-
-        subwooferShot.toggleOnTrue(new SubwooferShoot(s_Hopper, s_FlyWheel, s_Pivot));
-        protectedShot.toggleOnTrue(new ProtectedShoot(s_Hopper, s_FlyWheel, s_Pivot, s_Swerve, () -> -driver.getRawAxis(translationAxis), () -> -driver.getRawAxis(strafeAxis), () -> s_VisionSubystem.getCameraArray()));
-        shooterIntake.toggleOnTrue(new ShooterIntake(s_Pivot, s_FlyWheel, s_Hopper));
+        UseTrap.onTrue(new RunTrap(s_Trap, s_Pivot, s_FlyWheel));
+        
     }
 
     /**

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -10,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 import frc.robot.Constants;
 import frc.robot.Constants.Intake.Setpoints;
+import frc.robot.Constants.Trap.SetpointsTrap;
 
 public class Trap extends ProfiledPIDSubsystem {
 
@@ -23,7 +26,9 @@ public class Trap extends ProfiledPIDSubsystem {
     private VoltageOut m_TrapArmRequest = new VoltageOut(0.0);
     private DutyCycleOut m_TrapIntakeRequest = new DutyCycleOut(0.0);
 
-    public Trap() {
+    private Supplier<Boolean> m_CollisionAvoidanceSupplier;    
+
+    public Trap(Supplier<Boolean> m_ShouldMoveTrap) {
         super(new ProfiledPIDController(
             Constants.Trap.TRAP_P, 
             0,
@@ -31,6 +36,8 @@ public class Trap extends ProfiledPIDSubsystem {
             new TrapezoidProfile.Constraints(0, 0))            
         );
 
+        getController().setTolerance(0.03);
+        this.m_CollisionAvoidanceSupplier = m_ShouldMoveTrap;        
     }
 
     @Override
@@ -50,7 +57,7 @@ public class Trap extends ProfiledPIDSubsystem {
 
 
 
-    public void requestGoal(Setpoints DesiredPosition) {
+    public void requestGoal(SetpointsTrap DesiredPosition) {
 
         if (!isHomed) {
             DriverStation.reportWarning(
@@ -61,7 +68,7 @@ public class Trap extends ProfiledPIDSubsystem {
         }
 
         switch (DesiredPosition) {
-            case DEPLOY:
+            case TRAP:
                 isRunning = true;
                 ampMode = false;
                 break;
@@ -82,29 +89,57 @@ public class Trap extends ProfiledPIDSubsystem {
     public void runIntake() {
         m_TrapIntakeMotor.setControl(m_TrapIntakeRequest.withOutput(-0.7));
     }
-
+    public void runIntakeReverse() {
+        m_TrapIntakeMotor.setControl(m_TrapIntakeRequest.withOutput(0.7));
+    }
     /* TODO: Tune AMP mode intake speed. */
     public void runTrapForAmp() {
         m_TrapIntakeMotor.setControl(m_TrapIntakeRequest.withOutput(0.6));
     }
 
-    public void stopIntake() {
+    public void stopTrapIntake() {
         m_TrapIntakeMotor.stopMotor();
     }
 
+    public void stopTrapArm() {
+        m_TrapArmMotor.stopMotor();
+    }
+
     /* Used for physical button on robot */
-    public void setIntakeAsHomed() {
+    public void setTrapAsHomed() {
         m_TrapIntakeMotor.setPosition(0.0);
         isHomed = true;
+    }
+
+    public void moveTrapTowardsGoal() {
+        m_TrapArmMotor.setControl(m_TrapArmRequest);
     }
 
     public boolean isHomed() {
         return isHomed;
     }
 
+    public void moveTrapTowardsHome() {
+        setGoal(0.01);
+    }
 
+    @Override
+    public void periodic() {
+        super.periodic();
 
+        if (!isHomed) {
+            return;
+        }
 
-
-
+        if (m_CollisionAvoidanceSupplier.get()) {
+            m_enabled = true;
+            setGoal(0.0);
+        } else if (isRunning) {
+            setGoal(Constants.Trap.TrapSetpoints.get(SetpointsTrap.TRAP));
+        } else if (ampMode) {
+            setGoal(0); //TODO: Tune intake AMP mode setpoint
+        } else {
+            setGoal(Constants.Trap.TrapSetpoints.get(SetpointsTrap.STOW));
+        }
+    }
 }

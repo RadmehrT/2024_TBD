@@ -25,11 +25,31 @@ public final class Constants {
         public static final double MAX_DIST_BETWEEN_POSE = 0.2;
     }
 
+    public final class Pivot {
+        public static final double LOAD_NOTE_INTO_TRAP = 0.0; //TODO get setpoint
+    }
+
     public final class Trap {
         public static final int TRAP_MOTOR_ID_0 = 0; //TODO get ID
         public static final int TRAP_MOTOR_ID_1 = 0; //TODO get ID
 
         public static final double TRAP_P = 0.0; //TODO get ID
+
+        public enum SetpointsTrap {
+            TRAP,
+            STOW,
+            OUT_OF_WAY,
+            AMP
+        }
+
+        public static final Map<SetpointsTrap, Double> TrapSetpoints = Map.of(
+            SetpointsTrap.TRAP,
+            0.15,
+            SetpointsTrap.STOW,
+            2.4,
+            SetpointsTrap.OUT_OF_WAY,
+            2.0
+        );        
     }
 
     public final class FlyWheel {

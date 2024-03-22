@@ -58,6 +58,29 @@ public class FlyWheel extends SubsystemBase {
         intaking = false;
     }
 
+    private void LoadNoteIntoTrap() {
+
+        double rightVoltage = m_RightPIDController.calculate(
+                    getRightFlywheelRPM(),
+                    100
+                );
+
+        double leftVoltage =  m_LeftPIDController.calculate(
+                getLeftFlywheelRPM(), 
+                100
+            );
+        
+        m_RightFlywheelMotor.setControl(
+            m_rightRequest.withOutput(
+                rightVoltage + m_RightFeedforwardController.calculate(100)
+            )
+        );
+
+        m_LeftFlywheelMotor.setVoltage(
+            leftVoltage + m_LeftFeedforwardController.calculate(100)
+        );
+    }
+
     private void updateValues() {
 
         double rightVoltage = m_RightPIDController.calculate(
