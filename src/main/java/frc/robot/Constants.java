@@ -25,6 +25,13 @@ public final class Constants {
         public static final double MAX_DIST_BETWEEN_POSE = 0.2;
     }
 
+    public final class Trap {
+        public static final int TRAP_MOTOR_ID_0 = 0; //TODO get ID
+        public static final int TRAP_MOTOR_ID_1 = 0; //TODO get ID
+
+        public static final double TRAP_P = 0.0; //TODO get ID
+    }
+
     public final class FlyWheel {
         public static final int MOTOR_ID_0 = 40;
         public static final int MOTOR_ID_1 = 41;
