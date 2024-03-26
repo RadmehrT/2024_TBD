@@ -37,7 +37,7 @@ public class ProtectedShoot extends Command {
     private Supplier<Camera[]> CameraSupplier;
 
     private PIDController m_CameraTargetPID = new PIDController(0.1, 0, 0.001);
-    private PIDController m_DrivetrainPID = new PIDController(0.07, 0, 0);
+    private PIDController m_DrivetrainPID = new PIDController(0.003, 0, 0);
 
     private Pose2d robotPose = new Pose2d();
 
@@ -113,8 +113,8 @@ public class ProtectedShoot extends Command {
                     );
             SmartDashboard.putNumber("Drive PID Out",  m_DrivetrainPID.calculate(
                     s_Swerve.getHeading().getDegrees(), 
-                        (Math.atan(
-                            (speakerPose.getY() - robotPose.getY()) /
+                        (Math.atan2(
+                            (speakerPose.getY() - robotPose.getY()),
                             (speakerPose.getX() - robotPose.getX()))) * (180/Math.PI)
                     ));
             SmartDashboard.putNumber("Drive PID In", s_Swerve.getHeading().getDegrees());

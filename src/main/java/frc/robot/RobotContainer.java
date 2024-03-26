@@ -3,6 +3,7 @@ package frc.robot;
 //import org.photonvision.PhotonCamera;
 
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
@@ -11,10 +12,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.autos.FivePiece;
 import frc.robot.autos.TestAuton;
 import frc.robot.autos.TestAuton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.autos.FivePiece;
 import frc.robot.autos.TestAuton;
 import frc.robot.commands.*;
@@ -43,10 +47,14 @@ public class RobotContainer {
     private final int strafeAxis = XboxController.Axis.kLeftX.value;
     private final int rotationAxis = XboxController.Axis.kRightX.value;
 
-    /* Cameras
-    private final Camera rightCam = new Camera(new PhotonCamera("rightCam"), new Transform3d()); //TODO: Get right camera transform
-    private final Camera leftCam = new Camera(new PhotonCamera("leftCam"), new Transform3d()); //TODO: Get left camera transform
+
+    private final Camera leftCam = new Camera(new PhotonCamera("LeftCam"), new Transform3d(new Translation3d(0.258, 0.291, 0.2), new Rotation3d(0, -1.08, 0.523)));
+    private final Camera rightCam = new Camera(new PhotonCamera("RightCam"), new Transform3d(new Translation3d(0.258, -0.291, 0.2), new Rotation3d(0, -1.08, -0.523)));
+    private final Camera LLCam = new Camera(new PhotonCamera("LLCam"), new Transform3d(new Translation3d(0.135, 0, 0.204), new Rotation3d(0, -1.04, 0))); //TODO: Get left camera transform
     /* Driver Buttons */
+
+    private final DigitalInput robotHomeButton = new DigitalInput(0);
+    private final Trigger robotHomeTrigger = new Trigger(() -> robotHomeButton.get());
 
     /* TODO: Change to driver preference */
     private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kBack.value); 
@@ -61,7 +69,8 @@ public class RobotContainer {
     private final JoystickButton UseTrap = new JoystickButton(mechOperator, XboxController.Button.kA.value);
     /* Subsystems */
 
-    private final VisionSubystem s_VisionSubystem = new VisionSubystem(new Camera[]{}/*new Camera[]{}/*new Camera[]{rightCam, leftCam}*/);
+    private final LEDHandler s_LedHandler = new LEDHandler();
+    private final VisionSubystem s_VisionSubystem = new VisionSubystem(new Camera[]{rightCam, leftCam, LLCam}/*new Camera[]{}/*new Camera[]{rightCam, leftCam}*/);
     private final Swerve s_Swerve = new Swerve(s_VisionSubystem);
     private final Pivot s_Pivot = new Pivot(s_Swerve::getPose);
 
@@ -80,8 +89,8 @@ public class RobotContainer {
                 s_Swerve, 
                 () -> -driver.getRawAxis(translationAxis), 
                 () -> -driver.getRawAxis(strafeAxis), 
-                () -> driver.getRawAxis(rotationAxis), 
-                () -> robotCentric.getAsBoolean()
+                () -> -driver.getRawAxis(rotationAxis), 
+                () -> false
             )
         );
      
@@ -111,6 +120,15 @@ public class RobotContainer {
      * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
     private void configureButtonBindings() {
+
+        robotHomeTrigger.onTrue(
+            new ParallelCommandGroup(
+                new InstantCommand(() -> s_Intake.setIntakeAsHomed()),
+                new InstantCommand(() -> s_Pivot.setPivotAsHomed()),
+                new PrintCommand("Homed")
+            ).ignoringDisable(true)
+        );
+
         /* Driver Buttons */
         zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
         runIntake.whileTrue(new ToggleIntake(s_Intake, s_Hopper));
@@ -125,6 +143,9 @@ public class RobotContainer {
         
     }
 
+    public LEDHandler getLedHandlerInstance() {
+        return s_LedHandler;
+    }
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *

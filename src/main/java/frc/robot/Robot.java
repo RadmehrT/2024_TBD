@@ -28,10 +28,13 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     m_robotContainer.disableAllPIDs();
+    m_robotContainer.getLedHandlerInstance().runDisabledStripAnimation();
   }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    m_robotContainer.getLedHandlerInstance().updateFieldSetupLEDs();
+  }
 
   @Override
   public void disabledExit() {}
