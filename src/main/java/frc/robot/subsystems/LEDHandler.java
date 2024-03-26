@@ -45,9 +45,13 @@ public class LEDHandler extends SubsystemBase {
     }
 
     public void updateFieldSetupLEDs() {
-        boolean intakeHomedStatus = intakeHomedSupplier.getAsBoolean();
-        boolean pivotHomedStatus = pivotHomedSupplier.getAsBoolean();
-        boolean trapHomedStatus = trapHomedSupplier.getAsBoolean();
+
+        boolean intakeHomedStatus = false;
+        boolean pivotHomedStatus = false;
+        boolean trapHomedStatus = false;
+        intakeHomedStatus = intakeHomedSupplier.getAsBoolean();
+        pivotHomedStatus = pivotHomedSupplier.getAsBoolean();
+        trapHomedStatus = trapHomedSupplier.getAsBoolean();
     
         // Set Mechanism Status LEDs
         LEDs.setLEDs(intakeHomedStatus ? 0 : 255, intakeHomedStatus ? 255 : 0, 0);
