@@ -52,7 +52,7 @@ public class Trap extends ProfiledPIDSubsystem {
 
     public double getTrapArmPosition() {
         return ((m_TrapPivotMotor.getPosition()
-            .getValueAsDouble()) / 104)*(2*Math.PI); //TODO replace with actual gear ratio julia question
+            .getValueAsDouble()) / 104)*(2*Math.PI); //TODO replace with actual gear ratio julia question but julia said it was 104 so im confused
     }
 
 

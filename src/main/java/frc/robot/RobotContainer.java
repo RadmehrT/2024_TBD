@@ -70,7 +70,7 @@ public class RobotContainer {
     private final JoystickButton shootNote = new JoystickButton(driver, XboxController.Button.kA.value);
     private final JoystickButton RunFlyWheel = new JoystickButton(driver, XboxController.Button.kB.value);
 
-    private final JoystickButton UseTrap = new JoystickButton(mechOperator, XboxController.Button.kA.value);
+    private final JoystickButton UseTrap = new JoystickButton(mechOperator, XboxController.Button.kY.value);
     /* Subsystems */
 
     private final LEDHandler s_LedHandler = new LEDHandler();
@@ -143,7 +143,7 @@ public class RobotContainer {
             
         RunFlyWheel.toggleOnTrue(new RunFlyWheel(s_FlyWheel));
 
-        //UseTrap.onTrue(new RunTrap(s_Trap, s_Pivot, s_FlyWheel));
+        UseTrap.onTrue(new TrapIndex(s_Trap, s_Pivot, s_FlyWheel));
         
     }
 

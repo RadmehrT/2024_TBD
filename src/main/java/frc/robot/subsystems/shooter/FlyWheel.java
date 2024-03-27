@@ -41,46 +41,47 @@ public class FlyWheel extends SubsystemBase {
         m_LeftPIDController.setTolerance(75);
     }
     
+    public void intake() {
+        intaking = true;
+        isRunning = false;
+        stopped = false;
+        indexing = false;
+    }
+    
+    public void run() {
+        isRunning = true;
+        stopped = false;
+        intaking = false;
+        indexing = false;
+    }
+
+    public void indexing() {
+        indexing = true;
+        isRunning = false;
+        stopped = false;
+        intaking = false;
+    }
+
+    public void idle() {
+        intaking = false;
+        isRunning = false;
+        stopped = false;
+        indexing = false;
+    }
+
+    public void stop() {
+        intaking = false;
+        stopped = true;
+        isRunning = false;
+        indexing = false;
+    }
+
     public double getRightFlywheelRPM() {
         return (m_RightFlywheelMotor.getVelocity().getValueAsDouble() * 60) / 0.8;
     }
 
     public double getLeftFlywheelRPM() {
         return (m_LeftFlywheelMotor.getVelocity().getValueAsDouble() * 60) / 0.8;
-    }
-
-    public void intake() {
-        intaking = true;
-        isRunning = false;
-        stopped = false;
-    }
-    public void run() {
-        isRunning = true;
-        stopped = false;
-        intaking = false;
-    }
-
-    private void LoadNoteIntoTrap() {
-
-        double rightVoltage = m_RightPIDController.calculate(
-                    getRightFlywheelRPM(),
-                    100
-                );
-
-        double leftVoltage =  m_LeftPIDController.calculate(
-                getLeftFlywheelRPM(), 
-                100
-            );
-        
-        m_RightFlywheelMotor.setControl(
-            m_rightRequest.withOutput(
-                rightVoltage + m_RightFeedforwardController.calculate(100)
-            )
-        );
-
-        m_LeftFlywheelMotor.setVoltage(
-            leftVoltage + m_LeftFeedforwardController.calculate(100)
-        );
     }
 
     private void updateValues() {
@@ -170,42 +171,30 @@ public class FlyWheel extends SubsystemBase {
     private void updateindex() {
         double rightVoltage = m_RightPIDController.calculate(
                     getRightFlywheelRPM(),
-                    -1000
+                    1000
                 );
 
         double leftVoltage =  m_LeftPIDController.calculate(
                 getLeftFlywheelRPM(), 
-                -1000
+                1000
             );
         
         m_RightFlywheelMotor.setControl(
             m_rightRequest.withOutput(
                 MathUtil.clamp(
-                    rightVoltage + m_RightFeedforwardController.calculate(-1000),
-                    -12,
+                    rightVoltage + m_RightFeedforwardController.calculate(1000),
+                    12,
                     0
                 )
             )
         );
         m_LeftFlywheelMotor.setVoltage(
             MathUtil.clamp(
-            leftVoltage + m_LeftFeedforwardController.calculate(-1000),
-            -12,
+            leftVoltage + m_LeftFeedforwardController.calculate(1000),
+            12,
             0
             )
         );
-    }
-
-    public void idle() {
-        intaking = false;
-        isRunning = false;
-        stopped = false;
-    }
-
-    public void stop() {
-        intaking = false;
-        stopped = true;
-        isRunning = false;
     }
 
     public boolean isReady() {

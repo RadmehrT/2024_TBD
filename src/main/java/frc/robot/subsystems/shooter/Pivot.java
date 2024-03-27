@@ -179,6 +179,7 @@ public class Pivot extends ProfiledPIDSubsystem {
     public boolean shouldMoveIntake() {
         return (super.getController().getGoal().position) >= 0.2;
     }
+    
     public boolean shouldMoveTrap() {
         return (super.getController().getGoal().position) >= 0.2; //TODO get actual value
     }    
