@@ -55,8 +55,6 @@ public class Trap extends ProfiledPIDSubsystem {
             .getValueAsDouble()) / 104)*(2*Math.PI); //TODO replace with actual gear ratio julia question but julia said it was 104 so im confused
     }
 
-
-
     public void requestGoal(SetpointsTrap DesiredPosition) {
 
         if (!isHomed) {
@@ -87,10 +85,11 @@ public class Trap extends ProfiledPIDSubsystem {
     }
 
     public void runIntake() {
-        m_TrapIntakeMotor.setControl(m_TrapIntakeRequest.withOutput(-0.7));
+        m_TrapIntakeMotor.setControl(m_TrapIntakeRequest.withOutput(-0.4));
     }
+
     public void runIntakeReverse() {
-        m_TrapIntakeMotor.setControl(m_TrapIntakeRequest.withOutput(0.7));
+        m_TrapIntakeMotor.setControl(m_TrapIntakeRequest.withOutput(0.4));
     }
     /* TODO: Tune AMP mode intake speed. */
     public void runTrapForAmp() {
@@ -111,10 +110,6 @@ public class Trap extends ProfiledPIDSubsystem {
         isHomed = true;
     }
 
-    public void moveTrapTowardsGoal() {
-        m_TrapPivotMotor.setControl(m_TrapArmRequest);
-    }
-
     public boolean isHomed() {
         return isHomed;
     }
@@ -122,9 +117,11 @@ public class Trap extends ProfiledPIDSubsystem {
     public void moveTrapTowardsHome() {
         setGoal(0.01);
     }
+    
     public double getTrapPivotMotorCurrent() {
         return m_TrapPivotMotor.getStatorCurrent().getValueAsDouble();
     }
+
     public boolean checkForTrapGamePiece() {
         if (getTrapPivotMotorCurrent() >= Constants.Trap.CURRENT_THRESHOLD) {
             return true;

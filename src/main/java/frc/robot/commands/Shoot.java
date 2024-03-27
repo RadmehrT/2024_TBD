@@ -91,6 +91,6 @@ public class Shoot extends Command {
     public void end(boolean interrupted) {
         s_FlyWheel.idle();
         s_Hopper.stop();
-        s_Pivot.movePivotToHome();
+        s_Pivot.returnHome();
     }
 }

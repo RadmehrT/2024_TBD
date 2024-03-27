@@ -41,6 +41,7 @@ import frc.robot.subsystems.Vision.VisionSubystem;
 public class RobotContainer {
 
     public SendableChooser<Command> autoChooser;
+    public boolean inAmpMode = false;
 
     /* Controllers */
     private final Joystick driver = new Joystick(0);
@@ -141,10 +142,7 @@ public class RobotContainer {
         shootNote.whileTrue(new Shoot(s_Pivot, s_FlyWheel, s_Hopper, s_Intake, s_Swerve, 
             () -> -driver.getRawAxis(translationAxis), () -> -driver.getRawAxis(strafeAxis), null));
             
-        RunFlyWheel.toggleOnTrue(new RunFlyWheel(s_FlyWheel));
-
-        UseTrap.onTrue(new TrapIndex(s_Trap, s_Pivot, s_FlyWheel));
-        
+        RunFlyWheel.toggleOnTrue(new RunFlyWheel(s_FlyWheel));        
     }
 
     public LEDHandler getLedHandlerInstance() {

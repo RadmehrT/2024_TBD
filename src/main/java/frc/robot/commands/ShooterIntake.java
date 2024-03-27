@@ -31,7 +31,7 @@ public class ShooterIntake extends Command{
     public void end(boolean interrupted) {
         s_FlyWheel.idle();
         s_Pivot.enable();
-        s_Pivot.movePivotToHome();
+        s_Pivot.returnHome();
         s_Hopper.stop();
     }
     
