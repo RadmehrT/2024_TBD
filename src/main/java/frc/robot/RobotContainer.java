@@ -1,5 +1,9 @@
 package frc.robot;
 
+import org.photonvision.PhotonCamera;
+
+import edu.wpi.first.math.geometry.Rotation3d;
+
 //import org.photonvision.PhotonCamera;
 
 import edu.wpi.first.math.geometry.Transform3d;
@@ -139,7 +143,7 @@ public class RobotContainer {
             
         RunFlyWheel.toggleOnTrue(new RunFlyWheel(s_FlyWheel));
 
-        UseTrap.onTrue(new RunTrap(s_Trap, s_Pivot, s_FlyWheel));
+        //UseTrap.onTrue(new RunTrap(s_Trap, s_Pivot, s_FlyWheel));
         
     }
 

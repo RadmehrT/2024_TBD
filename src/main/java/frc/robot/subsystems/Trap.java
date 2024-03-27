@@ -16,7 +16,7 @@ import frc.robot.Constants.Trap.SetpointsTrap;
 
 public class Trap extends ProfiledPIDSubsystem {
 
-    private final TalonFX m_TrapArmMotor = new TalonFX(Constants.Trap.TRAP_MOTOR_ID_0);
+    private final TalonFX m_TrapPivotMotor = new TalonFX(Constants.Trap.TRAP_MOTOR_ID_0);
     private final TalonFX m_TrapIntakeMotor = new TalonFX(Constants.Trap.TRAP_MOTOR_ID_1);
 
     private boolean isHomed = false;
@@ -26,7 +26,7 @@ public class Trap extends ProfiledPIDSubsystem {
     private VoltageOut m_TrapArmRequest = new VoltageOut(0.0);
     private DutyCycleOut m_TrapIntakeRequest = new DutyCycleOut(0.0);
 
-    private Supplier<Boolean> m_CollisionAvoidanceSupplier;    
+    private Supplier<Boolean> m_NoteAvoidanceSupplier;    
 
     public Trap(Supplier<Boolean> m_ShouldMoveTrap) {
         super(new ProfiledPIDController(
@@ -37,7 +37,7 @@ public class Trap extends ProfiledPIDSubsystem {
         );
 
         getController().setTolerance(0.03);
-        this.m_CollisionAvoidanceSupplier = m_ShouldMoveTrap;        
+        this.m_NoteAvoidanceSupplier = m_ShouldMoveTrap;        
     }
 
     @Override
@@ -47,12 +47,12 @@ public class Trap extends ProfiledPIDSubsystem {
 
     @Override
     protected void useOutput(double output, TrapezoidProfile.State setpoint) {
-        m_TrapArmMotor.setControl(m_TrapArmRequest.withOutput(output));
+        m_TrapPivotMotor.setControl(m_TrapArmRequest.withOutput(output));
     }
 
     public double getTrapArmPosition() {
-        return ((m_TrapArmMotor.getPosition()
-            .getValueAsDouble()) / 104)*(2*Math.PI); //TODO replace with actual gear ratio
+        return ((m_TrapPivotMotor.getPosition()
+            .getValueAsDouble()) / 104)*(2*Math.PI); //TODO replace with actual gear ratio julia question
     }
 
 
@@ -102,7 +102,7 @@ public class Trap extends ProfiledPIDSubsystem {
     }
 
     public void stopTrapArm() {
-        m_TrapArmMotor.stopMotor();
+        m_TrapPivotMotor.stopMotor();
     }
 
     /* Used for physical button on robot */
@@ -112,7 +112,7 @@ public class Trap extends ProfiledPIDSubsystem {
     }
 
     public void moveTrapTowardsGoal() {
-        m_TrapArmMotor.setControl(m_TrapArmRequest);
+        m_TrapPivotMotor.setControl(m_TrapArmRequest);
     }
 
     public boolean isHomed() {
@@ -121,6 +121,15 @@ public class Trap extends ProfiledPIDSubsystem {
 
     public void moveTrapTowardsHome() {
         setGoal(0.01);
+    }
+    public double getTrapPivotMotorCurrent() {
+        return m_TrapPivotMotor.getStatorCurrent().getValueAsDouble();
+    }
+    public boolean checkForTrapGamePiece() {
+        if (getTrapPivotMotorCurrent() >= Constants.Trap.CURRENT_THRESHOLD) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -131,7 +140,7 @@ public class Trap extends ProfiledPIDSubsystem {
             return;
         }
 
-        if (m_CollisionAvoidanceSupplier.get()) {
+        if (m_NoteAvoidanceSupplier.get()) {
             m_enabled = true;
             setGoal(0.0);
         } else if (isRunning) {
@@ -143,3 +152,9 @@ public class Trap extends ProfiledPIDSubsystem {
         }
     }
 }
+// if i hit a button it changes the whole intake thing to trap
+//logic for oh no this for the command stage actually 
+//a method to get tthe current of the trap and if it exceeds some predefined current then you return a boolean value (says whether or not i have a note)
+//copy and paste of toggle intake
+//move the flywheel at a slow speed and also move the other motor hopper starwheel intake and the one closest to the flywheel
+//(flywheel is the thing with the four wheels that shoots the note) im gonna have the command also move that and the 

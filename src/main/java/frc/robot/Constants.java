@@ -58,6 +58,7 @@ public final class Constants {
         public static final int TRAP_MOTOR_ID_1 = 0; //TODO get ID
 
         public static final double TRAP_P = 0.0; //TODO get ID
+        public static final double CURRENT_THRESHOLD = 0.0; //TODO set threshold
 
         public enum SetpointsTrap {
             TRAP,

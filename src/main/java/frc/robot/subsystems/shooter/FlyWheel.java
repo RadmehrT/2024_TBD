@@ -29,6 +29,7 @@ public class FlyWheel extends SubsystemBase {
     boolean readyToShoot = false;
     boolean isRunning = false;
     boolean stopped = true;
+    boolean indexing = false;
 
     public FlyWheel() {;
         m_RightFlywheelMotor = new TalonFX(Constants.FlyWheel.SHOOTER_RIGHT_ID);
@@ -137,7 +138,36 @@ public class FlyWheel extends SubsystemBase {
         );
     }
 
-        private void updateIntake() {
+    private void updateIntake() {
+        double rightVoltage = m_RightPIDController.calculate(
+                    getRightFlywheelRPM(),
+                    1000
+                );
+
+        double leftVoltage =  m_LeftPIDController.calculate(
+                getLeftFlywheelRPM(), 
+                1000
+            );
+        
+        m_RightFlywheelMotor.setControl(
+            m_rightRequest.withOutput(
+                MathUtil.clamp(
+                    rightVoltage + m_RightFeedforwardController.calculate(-1000),
+                    -12,
+                    0
+                )
+            )
+        );
+        m_LeftFlywheelMotor.setVoltage(
+            MathUtil.clamp(
+            leftVoltage + m_LeftFeedforwardController.calculate(-1000),
+            -12,
+            0
+            )
+        );
+    }
+
+    private void updateindex() {
         double rightVoltage = m_RightPIDController.calculate(
                     getRightFlywheelRPM(),
                     -1000
@@ -192,6 +222,8 @@ public class FlyWheel extends SubsystemBase {
             updateValues();
         } else if (intaking) {
             updateIntake();
+        } else if (indexing) {
+            updateindex();
         } else {
             updateIdle();
         }
